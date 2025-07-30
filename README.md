@@ -11,17 +11,11 @@ Here are the examples you'll find in this project:
 1.  **Show URL:**
     * This demonstrates the most basic way to load and display a URL within a `WKWebView`. It's ideal for understanding the fundamental flow of web content display.
 
-2.  **Non-existent URL:**
-    * This example illustrates how to handle errors when the provided URL doesn't correspond to an existing page. It's essential for building robust applications that inform the user about navigation issues.
-
-3.  **URL without HTTPS:**
-    * Shows how WebKit behaves when attempting to load a URL that doesn't use the secure HTTPS protocol. It's important to understand the security implications and how WebKit handles such cases.
-
-4.  **JavaScript Injection into Site:**
+2.  **JavaScript Injection into Site:**
     * Explore the capability to inject JavaScript code directly into a web page loaded in the `WKWebView`. This opens doors for DOM manipulation, interaction with page elements, and bidirectional communication between native code and JavaScript.
 
-5.  **Simple Browser:**
-    * A basic web browser example, integrating URL loading functionalities, navigation (forward/back), and potentially an address bar. It serves as a starting point for creating a more comprehensive browser.
+3.  **Simple Browser:**
+    * A basic web browser example, integrating URL loading functionalities and an address bar. It serves as a starting point for creating a more comprehensive browser.
 
 ---
 
