@@ -75,34 +75,48 @@ struct ContentView: View {
 
 let JSInjectionModelExample: JSInjectionModel = .init(JSInjectionScript:
     """
-    (function(){
-        // Tenta injetar dentro do iframe com id "frame"
-        function injectToFrame() {
-            const frame = document.getElementById('frame');
-            if (!frame || !frame.contentWindow) return false;
-            const doc = frame.contentWindow.document;
-            if (!doc) return false;
+    (function () {
 
-            // Delegação de evento dentro do documento do iframe
-            doc.addEventListener('click', function(e) {
-                if (e.target.matches('#feedback button')) {
-                    window.webkit.messageHandlers.appMessageHandler.postMessage('okClicked');
-                }
-            }, true);
+      /** injeta código no documento de um iframe */
+      function attachTo(doc) {
 
-            return true;
-        }
+        if (!doc || doc.__feedbackHooked) return; // evita duplicar
+        doc.__feedbackHooked = true;
 
-        // Verifica a cada 500ms até conseguir injetar
-        const intervalId = setInterval(function() {
-            if (injectToFrame()) {
-                clearInterval(intervalId);
-                window.webkit.messageHandlers.appMessageHandler.postMessage('Injection Confirmation');
+        /* 1. Captura o clique (fase de CAPTURA para pegar antes do remove()) */
+        doc.addEventListener('click', function (e) {
+          const btn = e.target.closest('#feedback button');
+          if (btn) {
+            window.webkit.messageHandlers.appMessageHandler.postMessage('okClicked');
+          }
+        }, true);
+
+        /* 2. Plano-B: se o nó #feedback for removido via jQuery .remove() */
+        const obs = new MutationObserver((mutations) => {
+          for (const m of mutations) {
+            for (const n of m.removedNodes) {
+              if (n.id === 'feedback' || (n.nodeType === 1 && n.querySelector &&
+                                          n.querySelector('#feedback'))) {
+                window.webkit.messageHandlers.appMessageHandler.postMessage('okClicked');
+              }
             }
-        }, 500);
+          }
+        });
+        obs.observe(doc.body, { childList: true, subtree: true });
+      }
 
-        // Retorno nulo para evaluateJavaScript
-        null;
+      /** tenta encontrar o iframe onde o jogo é renderizado */
+      function tryInject() {
+        const frame = document.getElementById('frame');
+        if (frame && frame.contentWindow && frame.contentWindow.document.readyState !== 'loading') {
+          attachTo(frame.contentWindow.document);
+          clearInterval(loop);
+          window.webkit.messageHandlers.appMessageHandler.postMessage('Injection ready');
+        }
+      }
+
+      /* roda até o iframe terminar de carregar */
+      const loop = setInterval(tryInject, 500);
     })();
     """
 )
